@@ -1,0 +1,113 @@
+#!/bin/bash
+# IP Change Detector and Notifier.
+# (c) Copyright Zachary DuBois, 2014. All rights reserved.
+version="v0.1"
+#
+# Example CRON for once every 5 min:
+# 0,5,10,15,20,25,30,35,40,45,50,55 * * * * /etc/do-ipupdate.bash
+#
+# I recommend setting this file to 700 because it contains many API keys and sensitive information.
+
+
+##
+# Variables
+##
+
+# Static
+dnsToken=""
+pushoverAppKey=""
+pushoverUserKey=""
+domain=""
+recordID1=""
+recordName1=""
+recordID2=""
+recordName2=""
+logLocation=""
+pushoverTitle=""
+pushoverURL=""
+pushoverURLTitle=""
+
+# Dynamic
+ip="$(curl -s http://icanhazip.com/)"
+lastIP="$(tail -n 1 $logLocation | awk -F' ' '{ print $5 }')"
+time="$(date '+%F %T')"
+
+
+##
+# If no external IP/Cannot curl icanhazip (No internet)
+##
+
+if [[ "$ip" == "" ]]
+then
+  ip="UNAVAILABLE"
+else
+  ##
+  # If IP Changed
+  ##
+
+  if [[ "$lastIP" != "$ip" ]]
+  then
+    # Notify via Pushover
+    curl -s --form-string "token=$pushoverAppKey" --form-string "user=$pushoverUserKey" --form-string "url=$pushoverURL" --form-string "url_title=$pushoverURLTitle" --form-string "priority=-1" --form-string "title=$pushoverTitle" --form-string "message=IP has changed from $lastIP to $ip. DNS will be updated with these changes." https://api.pushover.net/1/messages.json
+    curlPushover=$?
+
+    # Update the DNS
+    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+    dns1=$?
+    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID2" -d'{"name":"'$recordName2'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+    dns2=$?
+  fi
+# End of else
+fi
+
+
+##
+# Log Everything
+##
+
+if [[ "$dns1" == "0" ]]
+then
+  dns1Status="[OK]"
+elif [[ "$dns1" == "" ]]
+then
+  dns1Status="[NOT UPDATED]"
+else
+  dns1Status="[FAIL]"
+fi
+
+if [[ "$dns2" == "0" ]]
+then
+  dns2Status="[OK]"
+elif [[ "$dns2" == "" ]]
+then
+  dns2Status="[NOT UPDATED]"
+else
+  dns2Status="[FAIL]"
+fi
+
+if [[ "$curlPushover" == "0" ]]
+then
+  curlPushoverStatus="[OK]"
+elif [[ "$dns1" == "" ]]
+then
+  curlPushoverStatus="[NOT NOTIFIED]"
+else
+  curlPushoverStatus="[FAIL]"
+fi
+
+
+##
+# Log File Format
+##
+
+# Log format YYYY-MM-DD HH:MM:SS - IP: 127.0.0.1 - DNS1: [] - DNS2: [] - PUSHOVER: []
+msg="$time - IP: $ip - DNS1: $dns1Status - DNS2: $dns2Status - PUSHOVER: $curlPushoverStatus"
+
+
+##
+# Write the log.
+##
+
+echo "$msg" >> $logLocation
+
+exit 0
