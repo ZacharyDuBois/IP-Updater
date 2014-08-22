@@ -1,12 +1,8 @@
 #!/bin/bash
 # IP Change Detector and Notifier.
+# https://bitbucket.org/Zachary_DuBois/ip-updater
 # (c) Copyright Zachary DuBois, 2014. All rights reserved.
-version="v0.1"
-#
-# Example CRON for once every 5 min:
-# 0,5,10,15,20,25,30,35,40,45,50,55 * * * * /etc/do-ipupdate.bash
-#
-# I recommend setting this file to 700 because it contains many API keys and sensitive information.
+version="v0.1.1"
 
 
 ##
@@ -15,14 +11,15 @@ version="v0.1"
 
 # Static
 dnsToken=""
-pushoverAppKey=""
-pushoverUserKey=""
 domain=""
 recordID1=""
 recordName1=""
 recordID2=""
 recordName2=""
 logLocation=""
+# If you don't want to use Pushover, leave pushoverAppKey set to "".
+pushoverAppKey=""
+pushoverUserKey=""
 pushoverTitle=""
 pushoverURL=""
 pushoverURLTitle=""
@@ -48,8 +45,11 @@ else
   if [[ "$lastIP" != "$ip" ]]
   then
     # Notify via Pushover
-    curl -s --form-string "token=$pushoverAppKey" --form-string "user=$pushoverUserKey" --form-string "url=$pushoverURL" --form-string "url_title=$pushoverURLTitle" --form-string "priority=-1" --form-string "title=$pushoverTitle" --form-string "message=IP has changed from $lastIP to $ip. DNS will be updated with these changes." https://api.pushover.net/1/messages.json
-    curlPushover=$?
+    if [[ "$pushoverAppKey" != "" ]]
+    then
+      curl -s --form-string "token=$pushoverAppKey" --form-string "user=$pushoverUserKey" --form-string "url=$pushoverURL" --form-string "url_title=$pushoverURLTitle" --form-string "priority=-1" --form-string "title=$pushoverTitle" --form-string "message=IP has changed from $lastIP to $ip. DNS will be updated with these changes." https://api.pushover.net/1/messages.json
+      curlPushover=$?
+    fi
 
     # Update the DNS
     curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
@@ -88,9 +88,14 @@ fi
 if [[ "$curlPushover" == "0" ]]
 then
   curlPushoverStatus="[OK]"
-elif [[ "$dns1" == "" ]]
+elif [[ "$curlPushover" == "" ]]
 then
-  curlPushoverStatus="[NOT NOTIFIED]"
+  if [[ "$pushoverAppKey" == "" ]]
+  then
+    curlPushoverStatus="[DISABLED]"
+  else
+    curlPushoverStatus="[NOT NOTIFIED]"
+  fi
 else
   curlPushoverStatus="[FAIL]"
 fi

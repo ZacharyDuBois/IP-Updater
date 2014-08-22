@@ -1,6 +1,6 @@
 # Installation
 
-*v0.1*
+*v0.1.1*
 
 #### 1)
 
@@ -8,7 +8,7 @@ Download the script and fill out the information in the variables block.
 
 #### 2)
 
-Save the file into `/etc/` (That is where mine is located).
+Save the file into `/etc/` (That's where mine is located).
 
 #### 3)
 
@@ -21,7 +21,7 @@ Set the file to permissions of `700`.
 Add a cronjob in your crontab.
 
     crontab -e
-    0,5,10,15,20,25,30,35,40,45,50,55 * * * * /etc/do-ipupdate.bash
+    0,5,10,15,20,25,30,35,40,45,50,55 * * * * /etc/do-ipupdate
 
 #### 5)
 
