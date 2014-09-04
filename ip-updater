@@ -62,7 +62,7 @@ fi
 if ! [[ -r "$logLocation" ]]
 then
   echo "The log location does not exist. Attempting to create one."
-  echo "YYYY-MM-DD HH:MM:SS - 127.0.0.1 - [X] - [X] - [X]" > $logLocation
+  echo "YYYY-MM-DD HH:MM:SS 127.0.0.1 X X X" > $logLocation
   logCreateStatus=$?
   if [[ "$logCreateStatus" != "0" ]]
   then
@@ -95,15 +95,33 @@ pushoverSend() {
 
 dnsUpdate() {
   updatedIP=$1
+  forceUpdate=$2
   
   curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
   dns1=$?
   
-  if [[ "$recordID2" != "" ]] && [[ "$recordName2" != "" ]]
+  if [[ "$recordID2" != "" ]] && [[ "$recordName2" != "" ]] || [[ "$forceUpdate" == "Y" ]]
   then
     curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
-    dns1=$?
+    dns2=$?
   fi
+}
+
+logMSG="$time $ip"
+logInformation() {
+  statusCode=$1
+  
+  if [[ "$statusCode" == "" ]]
+  then
+    logStatus="C"
+  elif [[ "$statusCode" == "0" ]]
+  then
+    logStatus="+"
+  else
+    logStatus="X"
+  fi
+  
+  logMSG="$logMSG $logStatus"
 }
 
 if [[ "$ip" == "" ]]
@@ -128,57 +146,12 @@ fi
 
 
 ##
-# Log Everything
+# Write Log
 ##
+logInformation "$pushoverStatus"
+logInformation "$dns1"
+logInformation "$dns2"
+echo "$logMSG" >> $logLocation
 
-if [[ "$dns1" == "0" ]]
-then
-  dns1Status="[OK]"
-elif [[ "$dns1" == "" ]]
-then
-  dns1Status="[NOT UPDATED]"
-else
-  dns1Status="[FAIL]"
-fi
-
-if [[ "$dns2" == "0" ]]
-then
-  dns2Status="[OK]"
-elif [[ "$dns2" == "" ]]
-then
-  dns2Status="[NOT UPDATED]"
-else
-  dns2Status="[FAIL]"
-fi
-
-if [[ "$curlPushover" == "0" ]]
-then
-  curlPushoverStatus="[OK]"
-elif [[ "$curlPushover" == "" ]]
-then
-  if [[ "$pushoverAppKey" == "" ]]
-  then
-    curlPushoverStatus="[DISABLED]"
-  else
-    curlPushoverStatus="[NOT NOTIFIED]"
-  fi
-else
-  curlPushoverStatus="[FAIL]"
-fi
-
-
-##
-# Log File Format
-##
-
-# Log format YYYY-MM-DD HH:MM:SS - 127.0.0.1 - [ ] - [ ] - [ ]
-msg="$time - $ip - $dns1Status - $dns2Status - $curlPushoverStatus"
-
-
-##
-# Write the log.
-##
-
-echo "$msg" >> $logLocation
 
 exit 0
