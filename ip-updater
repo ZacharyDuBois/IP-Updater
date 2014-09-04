@@ -27,11 +27,7 @@ pushoverUserKey=""
 pushoverTitle="IP Updater"
 pushoverURL=""
 pushoverURLTitle=""
-# Other (You should not need to modify these)
-ip="$(curl -s http://icanhazip.com/)"
-lastLogLine="$(tail -n 1 $logLocation)"
-lastIP="$(echo $lastLogLine | awk -F' ' '{ print $3 }')"
-time="$(date '+%F %T')"
+# Other variables that should not need to be changed have been moved below Startup Checks.
 
 
 ##
@@ -55,7 +51,7 @@ then
 fi
 
 # Check for variables set correctly
-if [[ "$digitalOceanAPI" == "" ]] && [[ "$domain" == "" ]] && [[ "$recordID1" == "" ]] && [[ "$recordName1" == "" ]] && [[ "$logLocation" == "" ]] && [[ "$lastLogLine" == "" ]] && [[ "$lastIP" == "" ]] && [[ "$time" == "" ]]
+if [[ "$digitalOceanAPI" == "" ]] && [[ "$domain" == "" ]] && [[ "$recordID1" == "" ]] && [[ "$recordName1" == "" ]] && [[ "$logLocation" == "" ]]
 then
   echo "You have not set all the required variables in the variables block. Please edit them with the correct details."
   exit 1
@@ -74,6 +70,11 @@ then
   fi
 fi
 
+# Other (You should not need to modify these)
+ip="$(curl -s http://icanhazip.com/)"
+lastLogLine="$(tail -n 1 $logLocation)"
+lastIP="$(echo $lastLogLine | awk -F' ' '{ print $3 }')"
+time="$(date '+%F %T')"
 
 ##
 # Start
@@ -189,7 +190,7 @@ fi
 
 lastStatus=()
 lastStatusInt=4
-actionList=("'pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"'" "'dnsUpdate "$ip"'" "'dnsUpdate "$ip" "Y"'"})
+actionList=({"pushoverSend 'Your IP has changed! Your new IP is $ip (Changed from $lastIP)'", "dnsUpdate '$ip'", "dnsUpdate '$ip' 'Y'"})
 actionListInt=0
 
 echo "Checking for any failures from last run."
