@@ -175,10 +175,21 @@ done
 ##
 # Write Log
 ##
+
 logInformation "$pushoverStatus"
 logInformation "$dns1"
 logInformation "$dns2"
 echo "$logMSG" >> $logLocation
+
+
+##
+# Keep Log Small
+##
+
+if [[ "$(wc -l < $logLocation)" > 5000 ]]
+then
+  sed -i '1d' $logLocation
+fi
 
 
 exit 0
