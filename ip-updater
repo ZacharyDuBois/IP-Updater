@@ -98,12 +98,14 @@ dnsUpdate() {
   updatedIP=$1
   forceUpdate=$2
   
-  curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+  echo "Updating DNS1 with $updatedIP."
+  curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json" > /dev/null
   dns1=$?
   
   if [[ "$recordID2" != "" ]] && [[ "$recordName2" != "" ]] || [[ "$forceUpdate" == "Y" ]]
   then
-    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+    echo "Updating DNS2 with $updatedIP."
+    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json" > /dev/null
     dns2=$?
   else
     dns2=""
@@ -135,12 +137,14 @@ then
   ##
   
   ip="UNAVAILABLE"
+  echo "IP is currently unavailable."
 else
 
   ##
   # If IP Changed
   ##
 
+  echo "The IP has changed from $lastIP to $ip. Running updates."
   # Notify via Pushover
   pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"
   # Update the DNS
@@ -153,8 +157,10 @@ fi
 
 lastStatus=()
 lastStatusInt=4
-actionList=("pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"" "dnsUpdate "$ip"" "dnsUpdate "$ip" "Y""})
+actionList=("'pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"'" "'dnsUpdate "$ip"'" "'dnsUpdate "$ip" "Y"'"})
 actionListInt=0
+
+echo "Checking for any failures from last run."
 
 while [[ "$(echo $lastLogLine | awk -F' ' '{ print $"$lastStatusInt" }' )" != "" ]]
 do
@@ -166,6 +172,7 @@ for lastStat in "${lastStatus[@]}"
 do
   if [[ "$lastStat" == "X" ]]
   then
+    echo "Failure found. Attempting correction."
     eval "${actionList[$actionListInt]}"
   fi
   actionListInt=$(($actionListInt+1))
@@ -179,6 +186,9 @@ done
 logInformation "$pushoverStatus"
 logInformation "$dns1"
 logInformation "$dns2"
+
+echo "Writing log file."
+echo "Adding \"$logMSG\" to log."
 echo "$logMSG" >> $logLocation
 
 
@@ -188,8 +198,11 @@ echo "$logMSG" >> $logLocation
 
 if [[ "$(wc -l < $logLocation)" > 5000 ]]
 then
+  echo "Log file is larger than 5000 lines. Removing oldest line."
   sed -i '1d' $logLocation
 fi
 
+
+echo "Done."
 
 exit 0
