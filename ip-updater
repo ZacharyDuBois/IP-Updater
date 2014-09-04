@@ -71,10 +71,42 @@ then
   fi
 fi
 
+
+##
+# Start
+##
+
+pushoverSend() {
+  message=$1
+  if [[ "$pushoverAppKey" != "" ]] && [[ "$pushoverUserKey" != "" ]]
+  then
+    curl -s --form-string "token=$pushoverAppKey" --form-string "user=$pushoverUserKey" --form-string "url=$pushoverURL" --form-string "url_title=$pushoverURLTitle" --form-string "priority=0" --form-string "title=$pushoverTitle" --form-string "message=$message" https://api.pushover.net/1/messages.json > /dev/null
+    pushoverStatus=$?
+    if [[ "$pushoverStatus" == "0" ]]
+    then
+      echo "Pushover message sent successfully: $message"
+    else
+      echo "Pushover failed to send message: $message"
+    fi
+  else
+    echo "No Pushover key set to send message: $message"
+  fi
+}
+
+dnsUpdate() {
+  updatedIP=$1
+}
+
 if [[ "$ip" == "" ]]
 then
+  
+  ##
+  # No IP/Internet
+  ##
+  
   ip="UNAVAILABLE"
 else
+
   ##
   # If IP Changed
   ##
@@ -82,12 +114,7 @@ else
   if [[ "$lastIP" != "$ip" ]]
   then
     # Notify via Pushover
-    if [[ "$pushoverAppKey" != "" ]]
-    then
-      curl -s --form-string "token=$pushoverAppKey" --form-string "user=$pushoverUserKey" --form-string "url=$pushoverURL" --form-string "url_title=$pushoverURLTitle" --form-string "priority=-1" --form-string "title=$pushoverTitle" --form-string "message=IP has changed from $lastIP to $ip. DNS will be updated with these changes." https://api.pushover.net/1/messages.json
-      curlPushover=$?
-    fi
-
+    pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"
     # Update the DNS
     curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
     dns1=$?
@@ -142,8 +169,8 @@ fi
 # Log File Format
 ##
 
-# Log format YYYY-MM-DD HH:MM:SS - IP: 127.0.0.1 - DNS1: [] - DNS2: [] - PUSHOVER: []
-msg="$time - IP: $ip - DNS1: $dns1Status - DNS2: $dns2Status - PUSHOVER: $curlPushoverStatus"
+# Log format YYYY-MM-DD HH:MM:SS - 127.0.0.1 - [ ] - [ ] - [ ]
+msg="$time - $ip - $dns1Status - $dns2Status - $curlPushoverStatus"
 
 
 ##
