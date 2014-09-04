@@ -2,29 +2,30 @@
 # IP Change Detector and Notifier.
 # https://bitbucket.org/Zachary_DuBois/ip-updater
 # (c) Copyright Zachary DuBois, 2014. All rights reserved.
-version="v0.1.1"
+version="v0.2"
 
 
 ##
 # Variables
 ##
 
-# Static
+# API Information
 dnsToken=""
 domain=""
 recordID1=""
 recordName1=""
+# The next two are optional
 recordID2=""
 recordName2=""
+# Log Location (Must be absolute)
 logLocation=""
-# If you don't want to use Pushover, leave pushoverAppKey set to "".
+# If you don't want to use Pushover, leave pushoverAppKey and/or pushoverUserKey set to "".
 pushoverAppKey=""
 pushoverUserKey=""
-pushoverTitle=""
+pushoverTitle="IP Updater"
 pushoverURL=""
 pushoverURLTitle=""
-
-# Dynamic
+# Other (You should not need to modify these)
 ip="$(curl -s http://icanhazip.com/)"
 lastIP="$(tail -n 1 $logLocation | awk -F' ' '{ print $5 }')"
 time="$(date '+%F %T')"
