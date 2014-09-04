@@ -11,7 +11,8 @@ version="v0.2"
 ##
 
 # API Information
-dnsToken=""
+digitalOceanAPI=""
+# DNS Info
 domain=""
 recordID1=""
 recordName1=""
@@ -54,7 +55,7 @@ then
 fi
 
 # Check for variables set correctly
-if [[ "$dnsToken" == "" ]] && [[ "$domain" == "" ]] && [[ "$recordID1" == "" ]] && [[ "$recordName1" == "" ]] && [[ "$logLocation" == "" ]]
+if [[ "$digitalOceanAPI" == "" ]] && [[ "$domain" == "" ]] && [[ "$recordID1" == "" ]] && [[ "$recordName1" == "" ]] && [[ "$logLocation" == "" ]] && [[ "$lastLogLine" == "" ]] && [[ "$lastIP" == "" ]] && [[ "$time" == "" ]]
 then
   echo "You have not set all the required variables in the variables block. Please edit them with the correct details."
   exit 1
@@ -100,13 +101,13 @@ dnsUpdate() {
   forceUpdate=$2
   
   echo "Updating DNS1 with $updatedIP."
-  curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json" > /dev/null
+  curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $digitalOceanAPI" -H "Content-Type: application/json" > /dev/null
   dns1=$?
   
   if [[ "$recordID2" != "" ]] && [[ "$recordName2" != "" ]] || [[ "$forceUpdate" == "Y" ]]
   then
     echo "Updating DNS2 with $updatedIP."
-    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json" > /dev/null
+    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $digitalOceanAPI" -H "Content-Type: application/json" > /dev/null
     dns2=$?
   else
     dns2=""
