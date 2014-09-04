@@ -144,6 +144,30 @@ else
   dnsUpdate "$ip"
 fi
 
+##
+# Fail Check
+##
+
+lastStatus=()
+lastStatusInt=4
+actionList=("pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"" "dnsUpdate "$ip"" "dnsUpdate "$ip" "Y""})
+actionListInt=0
+
+while [[ "$(tail -n 1 $logLocation | awk -F' ' '{ print $"$lastStatusInt" }' )" != "" ]]
+do
+  lastStatus+= "$(tail -n 1 $logLocation | awk -F' ' '{ print $"$lastStatusInt" }' )"
+  lastStatusInt=$(($lastStatusInt+1))
+done
+
+for lastStat in "${lastStatus[@]}"
+do
+  if [[ "$lastStat" == "X" ]]
+  then
+    eval "${actionList[$actionListInt]}"
+  fi
+  actionListInt=$(($actionListInt+1))
+done
+
 
 ##
 # Write Log
