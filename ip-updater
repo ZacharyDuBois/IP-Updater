@@ -95,6 +95,15 @@ pushoverSend() {
 
 dnsUpdate() {
   updatedIP=$1
+  
+  curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+  dns1=$?
+  
+  if [[ "$recordID2" != "" ]] && [[ "$recordName2" != "" ]]
+  then
+    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
+    dns1=$?
+  fi
 }
 
 if [[ "$ip" == "" ]]
@@ -111,17 +120,10 @@ else
   # If IP Changed
   ##
 
-  if [[ "$lastIP" != "$ip" ]]
-  then
-    # Notify via Pushover
-    pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"
-    # Update the DNS
-    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
-    dns1=$?
-    curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID2" -d'{"name":"'$recordName2'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
-    dns2=$?
-  fi
-# End of else
+  # Notify via Pushover
+  pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"
+  # Update the DNS
+  dnsUpdate "$ip"
 fi
 
 
