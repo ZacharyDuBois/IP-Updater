@@ -32,8 +32,44 @@ time="$(date '+%F %T')"
 
 
 ##
-# If no external IP/Cannot curl icanhazip (No internet)
+# Startup Checks
 ##
+
+# Check if root
+if [[ "$(id -u)" == "0" ]]
+then
+  echo "Do not run this script as root."
+  exit 1
+fi
+
+# Check for curl
+which curl > /dev/null
+checkForCurl=$?
+if [[ "$checkForCurl" != "0" ]]
+then 
+  echo "You need curl to run this script."
+  exit 1
+fi
+
+# Check for variables set correctly
+if [[ "$dnsToken" == "" ]] && [[ "$domain" == "" ]] && [[ "$recordID1" == "" ]] && [[ "$recordName1" == "" ]] && [[ "$logLocation" == "" ]]
+then
+  echo "You have not set all the required variables in the variables block. Please edit them with the correct details."
+  exit 1
+fi
+
+# Check if locations and files exist.
+if ! [[ -r "$logLocation" ]]
+then
+  echo "The log location does not exist. Attempting to create one."
+  echo "YYYY-MM-DD HH:MM:SS - 127.0.0.1 - [X] - [X] - [X]" > $logLocation
+  logCreateStatus=$?
+  if [[ "$logCreateStatus" != "0" ]]
+  then
+    echo "Failed to make the log file. Exitting."
+    exit 1
+  fi
+fi
 
 if [[ "$ip" == "" ]]
 then
