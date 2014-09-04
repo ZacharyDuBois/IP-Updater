@@ -129,6 +129,36 @@ logInformation() {
   logMSG="$logMSG $logStatus"
 }
 
+
+##
+# Retry if no IP
+##
+
+retryCount=0
+if [[ "$ip" == "" ]]
+then
+  while [[ "$ip" == "" ]] && [[ "$retryCount" < 3 ]]
+  do
+    if [[ "$retryCount" == 0 ]]
+    then
+      echo "IP is unavailable. Retrying once every 10 seconds for 30 seconds for IP."
+    else
+      retryCount=$((retryCount+1))
+      echo -n "X"
+      ip="$(curl -s http://icanhazip.com/)"
+    fi
+  sleep 10
+done
+if [[ "$retryCount" != 0 ]]
+then
+  echo
+fi
+
+
+##
+# Check for IP Changes
+##
+
 if [[ "$ip" == "" ]]
 then
   
