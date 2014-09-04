@@ -27,7 +27,8 @@ pushoverURL=""
 pushoverURLTitle=""
 # Other (You should not need to modify these)
 ip="$(curl -s http://icanhazip.com/)"
-lastIP="$(tail -n 1 $logLocation | awk -F' ' '{ print $5 }')"
+lastLogLine="$(tail -n 1 $logLocation)"
+lastIP="$(echo $lastLogLine | awk -F' ' '{ print $3 }')"
 time="$(date '+%F %T')"
 
 
@@ -104,6 +105,8 @@ dnsUpdate() {
   then
     curl -s -X PUT "https://api.digitalocean.com/v2/domains/$domain/records/$recordID1" -d'{"name":"'$recordName1'", "data":"'$ip'"}' -H "Authorization: Bearer $dnsToken" -H "Content-Type: application/json"
     dns2=$?
+  else
+    dns2=""
   fi
 }
 
@@ -153,9 +156,9 @@ lastStatusInt=4
 actionList=("pushoverSend "Your IP has changed! Your new IP is $ip (Changed from $lastIP)"" "dnsUpdate "$ip"" "dnsUpdate "$ip" "Y""})
 actionListInt=0
 
-while [[ "$(tail -n 1 $logLocation | awk -F' ' '{ print $"$lastStatusInt" }' )" != "" ]]
+while [[ "$(echo $lastLogLine | awk -F' ' '{ print $"$lastStatusInt" }' )" != "" ]]
 do
-  lastStatus+= "$(tail -n 1 $logLocation | awk -F' ' '{ print $"$lastStatusInt" }' )"
+  lastStatus+= "$(echo $lastLogLine | awk -F' ' '{ print $"$lastStatusInt" }' )"
   lastStatusInt=$(($lastStatusInt+1))
 done
 
