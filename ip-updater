@@ -190,7 +190,7 @@ fi
 
 lastStatus=()
 lastStatusInt=4
-actionList=({"pushoverSend 'Your IP has changed! Your new IP is $ip (Changed from $lastIP)'", "dnsUpdate '$ip'", "dnsUpdate '$ip' 'Y'"})
+actionList=('pushoverSend "Your IP has changed Your new IP is $ip (Changed from $lastIP)"', 'dnsUpdate "$ip"', 'dnsUpdate "$ip" "Y"')
 actionListInt=0
 
 echo "Checking for any failures from last run."
@@ -206,7 +206,7 @@ do
   if [[ "$lastStat" == "X" ]]
   then
     echo "Failure found. Attempting correction."
-    eval "${actionList[$actionListInt]}"
+    eval "${actionList["$actionListInt"]}"
   fi
   actionListInt=$(($actionListInt+1))
 done
