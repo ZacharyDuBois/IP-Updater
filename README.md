@@ -21,5 +21,3 @@
 - Currently run this on my Raspberry Pi to keep DigitalOcean's DNS (and myself via Pushover) updated if my IP changes.
 - I recommend this to be run by a cronjob every five minutes. Example in the `INSTALLATION.md`.
 - I also recommend you set the file permissions to `700` because it contains some API keys that you don't want other things seeing.
-
-Copyright (c) Zachary DuBois, 2014. All Rights Reserved.

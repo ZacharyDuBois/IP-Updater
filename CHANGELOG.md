@@ -11,6 +11,8 @@
 - Better output information.
 - Retries for IP once every 10 seconds for 30 seconds before giving up.
 - IPv6 Support.
+- Move to GitHub.
+- 
 
 ### v0.1.1
 
@@ -21,5 +23,3 @@
 
 - Initial release.
 
-
-Copyright (c) Zachary DuBois, 2014. All Rights Reserved.

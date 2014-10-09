@@ -1,8 +1,7 @@
 #!/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # IP Change Detector and Notifier.
-# https://bitbucket.org/Zachary_DuBois/ip-updater
-# (c) Copyright Zachary DuBois, 2014. All rights reserved.
+# https://github.com/ZacharyDuBois/IP-Updater
 version="v0.2"
 
 

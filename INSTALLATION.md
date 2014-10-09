@@ -26,5 +26,3 @@ Add a cronjob in your crontab.
 #### 5)
 
 Keep an eye on the log file to make sure it works :)
-
-Copyright (c) Zachary DuBois, 2014. All Rights Reserved.
