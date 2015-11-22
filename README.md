@@ -2,6 +2,10 @@
 
 *v0.1.1*
 
+## Deprecated as of 2015-11-22
+
+I am deprecating this project because I was using this on my Raspberry Pi to keep my home IP updated in DNS. However, I am working on a new thing that can do this called [PI Control](https://github.com/ZacharyDuBois/PI-Control). This will let you automatically update your DNS and even let you control a lot more on your Raspberry Pi. Stay tuned!
+
 ## Features
 
 - Checks for IP changes via [icanhazip](http://icanhazip.com).
