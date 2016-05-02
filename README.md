@@ -20,6 +20,12 @@ I am deprecating this project because I was using this on my Raspberry Pi to kee
 - Curl
 - Cron
 
+## Mailing List
+
+To receive updates and information about this project, please subscribe to my
+[mailing list](https://we.destroy.tokyo/Projects-Email-List) and select the
+projects you would like to be notified about.
+
 ## Notices
 
 - Currently run this on my Raspberry Pi to keep DigitalOcean's DNS (and myself via Pushover) updated if my IP changes.
